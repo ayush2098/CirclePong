@@ -3,6 +3,6 @@ The traditional ping pong game tweaked to make it single user friendly. Implemen
 
 To play,
   
-  gcc main.cpp -lGL -lGLU -glut -lm
+  <b>gcc main.cpp -lGL -lGLU -lglut -lm</b>
   
-  ./a.out
+  <b>./a.out</b>
