@@ -7,6 +7,7 @@
 
 static GLint theta = 0.0;
 static int r = 195, xc = 0, yc = 0;
+GLfloat bx=0.0,by=0.0 ,vx=0.10, vy=0.10;
 //using namespace std;
 
 
@@ -42,7 +43,7 @@ void drawPixel(int x, int y) {
 
 
 void drawCircle() {
-	glPointSize(1.0);
+	glPointSize(2.0);
 	int p = 1-r;
 	int x=0, y=r;
 	for(x=0;x< y;++x) {
@@ -68,34 +69,65 @@ void paddle() {
 	glEnd();
 }
 
-void myDisp() {
-	//char name[] = "Circle Pong";
-	////glScalef(10.0,10.0,1.0);
-	//text(name);
-	glClear(GL_COLOR_BUFFER_BIT);
-	drawCircle();
+void ball(GLfloat x, GLfloat y) {
+	glColor3f(1.0,0.0,0.0);
+	int i;
+	int triangleAmount = 20;
+
+	GLfloat radius = 10.0f;
+	GLfloat twicePi = 2.0f * 3.14;
+
+	glBegin(GL_TRIANGLE_FAN);
+		glVertex2f(x, y); // center of circle
+		for(i = 0; i <= triangleAmount;i++) {
+			glVertex2f(
+		            x + (radius * cos(i *  twicePi / triangleAmount)),
+			    y + (radius * sin(i * twicePi / triangleAmount))
+			);
+		}
+	glEnd();
+}
+
+void rotatePaddle() {
+	printf("HI");
+	//glClear(GL_COLOR_BUFFER_BIT);
+	//drawCircle();
 	glLoadIdentity();
 	glPushMatrix();
 	//glTranslatef(0.0,0.0,0.0);
 	glRotatef(theta,0.0,0.0,1.0);
 	//glTranslatef(0.0,0.0,0.0);
-	paddle();
 	glPopMatrix();
+	paddle();
+	ball(bx, by);
+	glFlush();
+	glutSwapBuffers();
+}
+
+void myDisp() {
+	//char name[] = "Circle Pong";
+	////glScalef(10.0,10.0,1.0);
+	//text(name);
+	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+	drawCircle();
+	paddle();
+	ball((float)bx,(float)by);
 	glFlush();
 	glutSwapBuffers();
 }
 
 void keys(unsigned char key, int x, int y) {
-	if(key=='x') {
+	if(key==GLUT_KEY_LEFT) {
 		if(theta<360.0) theta+=360.0;
 		theta-=5.0;
 	}
-	if(key=='y') {
+	if(key==GLUT_KEY_RIGHT) {
 		if(theta>360.0) theta-=360.0;
 		theta+=5.0;
 	}
-	//glutPostRedisplay();
-	myDisp();
+	rotatePaddle();
+	glutPostRedisplay();
+
 }
 
 void myReshape(int w, int h) {
@@ -103,10 +135,37 @@ void myReshape(int w, int h) {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	if(w<=h)
-		gluOrtho2D(-250.0,250.0,-250.0*(GLfloat)h/(GLfloat)w,250.0*(GLfloat)h/(GLfloat)w);
+		glOrtho(-250.0,250.0,-250.0*(GLfloat)h/(GLfloat)w,250.0*(GLfloat)h/(GLfloat)w,-1.0,1.0);
 	else
-		gluOrtho2D(-250.0*(GLfloat)w/(GLfloat)h,250.0*(GLfloat)w/(GLfloat)h,-250.0,250.0);
+		glOrtho(-250.0*(GLfloat)w/(GLfloat)h,250.0*(GLfloat)w/(GLfloat)h,-250.0,250.0,-1.0,1.0);
 	glMatrixMode(GL_MODELVIEW);
+}
+
+//checkcollision
+	void checkCollision(int bx,int by){
+	if(bx > xPMax && bx < xPMin && by==yPMax)
+	//Normal bounce
+	else if (by==yPMax && bx==xPMax)
+	//hits right sharp corner of paddle
+	else if (by==yPMax && bx==xPMin)
+	//hits left sharp corner of paddle
+	else if(bx)
+	if(d +10 > r){
+	//bounce ball
+	vx*=-1.0;
+	vy*=-1.0;
+	}
+}
+
+void idleFunc() {
+
+	checkCollision(bx, by);
+	bx+=vx;
+	by+=vy;
+
+
+	//ball(bx, by);
+	glutPostRedisplay();
 }
 
 int main(int argc, char **argv) {
@@ -114,11 +173,12 @@ int main(int argc, char **argv) {
 	glutInitWindowSize(500,500);
 	glutCreateWindow("Circle Pong");
 	//myinit();
-	glutInitDisplayMode(GLUT_DOUBLE|GLUT_RGB);
+	glutInitDisplayMode(GLUT_DOUBLE|GLUT_RGB|GLUT_DEPTH);
+	glutIdleFunc(idleFunc);
 	glutReshapeFunc(myReshape);
 	glutKeyboardFunc(keys);
 	glutDisplayFunc(myDisp);
-	//glEnable(GL_DEPTH_TEST);
+//	glEnable(GL_DEPTH_TEST);
 	glutMainLoop();
 	return 1;
 }
