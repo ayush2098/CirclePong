@@ -5,10 +5,11 @@
 #include<math.h>
 
 static GLint theta = 0.0;
-static int rc = 195, xc = 0, yc = 0;
-GLfloat radiusb=10.0,bx=0.0,by=0.0 ,vx=0.010, vy=0.010;
-GLfloat x1=-20.0,Y1=-190.0,x2=20.0,y2=-190.0,x3=20.0,y3=-200.0,x4=-20.0,y4=-200.0;
-GLfloat mat[4][4] = {{x1, x2, x3, x4},{Y1, y2, y3, y4},{1.0, 1.0, 1.0, 1.0},{1.0, 1.0, 1.0, 1.0}}, rot_mat[4][4], res[4][4];
+GLint xc = 0, yc = 0;
+static int rc=195;
+GLdouble radiusb=10.0,bx=0.0,by=0.0 ,vx=0.010, vy=0.010;
+GLdouble x1=-20.0,Y1=-190.0,x2=20.0,y2=-190.0,x3=20.0,y3=-200.0,x4=-20.0,y4=-200.0;
+GLdouble mat[4][4] = {{x1, x2, x3, x4},{Y1, y2, y3, y4},{1.0, 1.0, 1.0, 1.0},{1.0, 1.0, 1.0, 1.0}}, rot_mat[4][4], res[4][4];
 
 /** Drawing Outer Circle **/
 
@@ -54,10 +55,10 @@ void paddle() {
 		// glVertex2f(20.0,-190.0);
 		// glVertex2f(20.0,-200.0);
 		// glVertex2f(-20.0,-200.0);
-		glVertex2f(x1,Y1);
-		glVertex2f(x2,y2);
-		glVertex2f(x3,y3);
-		glVertex2f(x4,y4);
+		glVertex2d(x1,Y1);
+		glVertex2d(x2,y2);
+		glVertex2d(x3,y3);
+		glVertex2d(x4,y4);
 	glEnd();
 }
 
@@ -80,7 +81,7 @@ void myReshape(int w, int h) {
 
 /**Drawing Ball**/
 
-void ball(GLfloat x, GLfloat y) {
+void ball(GLdouble x, GLdouble y) {
 	glColor3f(1.0,0.0,0.0);
 	int i;
 	int triangleAmount = 20;
@@ -88,9 +89,9 @@ void ball(GLfloat x, GLfloat y) {
 	GLfloat twicePi = 2.0f * 3.14;
 
 	glBegin(GL_TRIANGLE_FAN);
-	glVertex2f(x, y); // center of circle
+	glVertex2d(x, y); // center of circle
 	for(i = 0; i <= triangleAmount;i++) {
-		glVertex2f(
+		glVertex2d(
 				x + (radiusb * cos(i *  twicePi / triangleAmount)),
 				y + (radiusb * sin(i * twicePi / triangleAmount))
 			  );
@@ -143,24 +144,41 @@ void rotate() {
 	y2=res[1][1];
 	y3=res[1][2];
 	y4=res[1][3];
-	//printf("%f\n",x1);
+
 }
 
 /****/
 
 /**Collision Detection**/
+void getLine(double x1, double y1, double x2, double y2, double &a, double &b, double &c)
+{
+    // (x- p1X) / (p2X - p1X) = (y - p1Y) / (p2Y - p1Y)
+    a = y2 - y1;
+    b = x2 - x1;
+    c = x1 * y2 - x2 * y1;
+}
 
-void checkCollision(int bx,int by){
+double dist(double pct1X, double pct1Y, double pct2X, double pct2Y, double pct3X, double pct3Y)
+{
+    double a, b, c;
+    getLine(pct2X, pct2Y, pct3X, pct3Y, a, b, c);
+    return abs(a * pct1X + b * pct1Y + c) / sqrt(a * a + b * b);
+}
+
+void checkCollision(double bx,double by){
 	//The Below commented one works amazingly !!
-	/*float d=sqrt(pow(bx,2)+pow(by,2));
-	if(d +10 > rc){
-		//bounce ball
+	double dPaddle=dist(bx, by, x1, Y1, x2, y2);
+	double d=sqrt(pow(bx,2)+pow(by,2));
+
+	if(dPaddle == 0|| d+10>rc){
+	//Normal bounce
+	printf("%f",dPaddle);
 		vx*=-1.0;
 		vy*=-1.0;
-	}*/
 
-	
 }
+}
+
 
 /****/
 
