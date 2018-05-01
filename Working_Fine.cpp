@@ -153,7 +153,7 @@ void rotate() {
 void getLine(double x1, double y1, double x2, double y2, double &a, double &b, double &c)
 {
     // (x- p1X) / (p2X - p1X) = (y - p1Y) / (p2Y - p1Y)
-    a = y2 - y1;
+    a = y1 - y2;
     b = x2 - x1;
     c = x1 * y2 - x2 * y1;
 }
@@ -170,9 +170,9 @@ void checkCollision(double bx,double by){
 	double dPaddle=dist(bx, by, x1, Y1, x2, y2);
 	double d=sqrt(pow(bx,2)+pow(by,2));
 
-	if(dPaddle == 0|| d+10>rc){
+	if(dPaddle > 4.75 && dPaddle< 5.125){
 	//Normal bounce
-	printf("%f",dPaddle);
+	//printf("dist= %f\nBx: %f By: %f",dPaddle,bx,by);
 		vx*=-1.0;
 		vy*=-1.0;
 
@@ -196,9 +196,10 @@ void rotatePaddle() {
 }
 
 void idleFunc() {
+
 	checkCollision(bx, by);
-	bx+=vx;
-	by+=vy;
+	bx-=vx;
+	by-=vy;
 	glutPostRedisplay();
 }
 
@@ -250,6 +251,8 @@ int main(int argc, char **argv) {
 	init();
 	glutIdleFunc(idleFunc);
 	glutReshapeFunc(myReshape);
+		double dPaddle=dist(bx, by, x1, Y1, x2, y2);
+	printf("dist= %f\nX1: %f Y1: %f\n X2: %f Y2: %f",dPaddle,x1,Y1,x2,y2);
 	//glutKeyboardFunc(keys);
 	glutSpecialFunc(specialkey);
 	glutDisplayFunc(myDisp);
