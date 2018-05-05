@@ -5,24 +5,27 @@
 #include<string.h>
 #include<GL/freeglut.h>
 #include<math.h>
+#include<fstream>
+
 #define pi  3.14159
 
 static GLint theta = 0.0;
 GLint xc = 0, yc = 0;
 static int rc=195;
-GLfloat Angle=0.0, Speed=0.09;
+GLfloat Angle=30.0, Speed=0.09;
 GLdouble radiusb=10.0,bx=0.0,by=0.0 ,vx=cos(Angle * pi / 180) * Speed, vy=sin(Angle * pi / 180) * Speed;
 GLdouble x1=-20.0,Y1=-190.0,x2=20.0,y2=-190.0,x3=20.0,y3=-200.0,x4=-20.0,y4=-200.0;
 GLdouble mat[4][4] = {{x1, x2, x3, x4},{Y1, y2, y3, y4},{1.0, 1.0, 1.0, 1.0},{1.0, 1.0, 1.0, 1.0}}, rot_mat[4][4], res[4][4];
-GLint score = 0,oldScore=0,totScore=0;
+GLint score = 0,oldScore=0,totScore=0,highScore;
 char toPrint[20],lol;
-
+/**flags**/
+bool level_zero=false, level_one=false;
 /** Drawing Outer Circle **/
 void drawPixel(int x, int y) {
 	glColor3f(1.0, 1.0, 1.0);
 	glBegin(GL_POINTS);
 	glVertex2i(xc+x, yc+y);
-	glVertex2i(xc+y, yc+x);
+	glVertex2i (xc+y, yc+x);
 	glVertex2i(xc+x, yc-y);
 	glVertex2i(xc+y, yc-x);
 	glVertex2i(xc-y, yc-x);
@@ -173,11 +176,13 @@ double dist(double pct1X, double pct1Y, double pct2X, double pct2Y, double pct3X
 void vRecalc(){
 Angle = atan2(vy * pi / 180, vx * pi / 180);
 //printf("theta: %f\n",Angle*180/pi);
-Angle+=(1+rand()%30)*pi/180; // Could also be subtracting here
-//printf("theta: %f\n",Angle*180/pi);
+//Angle+=Angle/4-(1+rand()%45)*pi/180; // Could also be subtracting here
+printf("theta: %f\n",Angle*180/pi);
 	vx = cos(Angle) * Speed;
 	vy = sin(Angle) * Speed;
     return;}
+
+
 
 void checkCollision(double bx,double by){
 	//The Below commented one works amazingly !!
@@ -185,11 +190,12 @@ void checkCollision(double bx,double by){
 	double d=pow(bx,2)+pow(by,2);
 	if(d<pow(rc-radiusb,2)){
 		if(dPaddle<=pow(radiusb,2)){
-
+            oldScore=score;
             vRecalc();
             vx*=-1.0;
             vy*=-1.0;
             score++;
+            //printf("theta: %f\n",Angle);
 
             }
     }
@@ -208,6 +214,7 @@ void checkCollision(double bx,double by){
 		glTranslatef(-200,-50,0);
 		glScalef(0.5,0.5,0);
 		glColor3f(1.0,1.0,1.0);
+		highScore=checkHS();        //highScore contains last HS returns 0 if no file exists or if file has no entries.
 		glutStrokeString(GLUT_STROKE_ROMAN, (unsigned char*)"Score : ");
 		sprintf(toPrint, "%d", totScore);
 		glutStrokeString(GLUT_STROKE_ROMAN, (unsigned char*)(toPrint));
@@ -222,6 +229,31 @@ void checkCollision(double bx,double by){
 
 /****/
 
+/**Level code**/
+void checkLevel(){
+if(totScore==5){
+	printf("hi");
+	level_zero=true;
+	bx=0.0,by=0.0;      //reset ball to centre
+	radiusb=15.0;   //increase readius of the ball
+	Speed=0.98;     //increase the speed of the ball
+	level_zero=false;
+    ball(bx,by);
+	return;}
+else if(totScore==10){
+level_zero=true;
+}
+}
+
+int checkHS(){
+ifstream leader;
+    ifile.open ("Score.txt");
+    cout << "Previous High score" << endl ;
+    int c = ifile.peek();
+    if ( c == EOF ) return 0;
+    if ( isdigit(c) )
+    return c;
+}
 
 void rotatePaddle() {
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -236,9 +268,13 @@ void rotatePaddle() {
 }
 
 void idleFunc() {
+    oldScore=score;
+    //oldScore=score;
+
 	checkCollision(bx, by);
 	bx+=vx;
 	by+=vy;
+	checkLevel();
 	glutPostRedisplay();
 }
 
@@ -255,14 +291,13 @@ void myDisp() {
 	glPushMatrix();
 	glTranslatef(150,200,0);
 	glScalef(0.2,0.2,0);
-	if(oldScore<score)
-	{totScore++;
-     oldScore=score;}
 	glutStrokeString(GLUT_STROKE_ROMAN, (unsigned char*)"Score : ");
 	glColor3f(1.0,0.0,0.0);
 	//itoa(score, toPrint, 10);
-	//if(score>oldScore) totScore+=1;
 
+	if(score>oldScore) totScore+=1;
+//    if(totScore==10)
+  //  level_one=true;
 	sprintf(toPrint, "%d", totScore);
 	glutStrokeString(GLUT_STROKE_ROMAN, (unsigned char*)(toPrint));
 	glTranslatef(-200,-200,0);
@@ -284,7 +319,7 @@ void myDisp() {
   }*/
 
 void specialkey(int key, int x, int y)
-{
+{   if(level_one==false){
 	if(key==GLUT_KEY_LEFT) {
 		if(theta<360.0) theta+=360.0;
 		theta-=2.0;
@@ -294,8 +329,19 @@ void specialkey(int key, int x, int y)
 		theta+=2.0;
 	}
 	rotatePaddle();
+    }
+    else{
+    if(key==GLUT_KEY_RIGHT) {
+		if(theta<360.0) theta+=360.0;
+		theta-=2.0;
+	}
+	if(key==GLUT_KEY_LEFT) {
+		if(theta>360.0) theta-=360.0;
+		theta+=2.0;
+	}
+	rotatePaddle();
+    }}
 
-}
 
 int main(int argc, char **argv) {
 	glutInit(&argc,argv);
