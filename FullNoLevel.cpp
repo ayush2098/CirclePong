@@ -1,7 +1,7 @@
 //0.004, 0.55, 0.69 - LightBlue
-//0.012,0.259,0.325 - DarkBlue - LEVEL2
+//0.012,0.259,0.325 - DarkBlue - LEVEL1
 //0.012,0.325,0.236 - SeaGreen - LEVEL3
-//0.56,0.188,0.188 - Maroonish - LEVEL1
+//0.56,0.188,0.188 - Maroonish - LEVEL2
 #include<stdio.h>
 #include<stdlib.h>
 #include<GL/glut.h>
@@ -18,9 +18,10 @@ GLfloat Angle=0.0, Speed=0.09;
 GLdouble radiusb=10.0,bx=0.0,by=0.0 ,vx=cos(Angle * pi / 180) * Speed, vy=sin(Angle * pi / 180) * Speed;
 GLdouble x1=-20.0,Y1=-190.0,x2=20.0,y2=-190.0,x3=20.0,y3=-200.0,x4=-20.0,y4=-200.0;
 GLdouble mat[4][4] = {{x1, x2, x3, x4},{Y1, y2, y3, y4},{1.0, 1.0, 1.0, 1.0},{1.0, 1.0, 1.0, 1.0}}, rot_mat[4][4], res[4][4];
-GLint score = 0;
-char toPrint[20],lol;
+GLint score = 0,hscore=0;
+char toPrint[20];
 int screen = 0;
+FILE *fin,*fout;
 
 void printString(unsigned char *string, GLfloat tx, GLfloat ty, GLfloat tz, GLfloat sx, GLfloat sy) {
     glPushMatrix();
@@ -194,6 +195,16 @@ void checkCollision(double bx,double by){
 		screen=3;
 		glClear(GL_COLOR_BUFFER_BIT);
 		glColor3f(1.0,1.0,0.0);
+    if(score>hscore) {
+      fout=fopen("score.txt","w");
+      if(fout==NULL){
+        printf("Error !!");
+        exit(1);
+      }
+      fprintf(fout,"%d",score);
+      fclose(fout);
+      hscore=score;
+    }
 		printString((unsigned char*)"GAME OVER", -300, 50, 0, 0.8, 0.8);
 		glPushMatrix();
 		glTranslatef(-200,-50,0);
@@ -203,6 +214,15 @@ void checkCollision(double bx,double by){
 		sprintf(toPrint, "%d", score);
 		glutStrokeString(GLUT_STROKE_ROMAN, (unsigned char*)(toPrint));
 		glTranslatef(200,50,0);
+		glPopMatrix();
+    glPushMatrix();
+		glTranslatef(-130,-100,0);
+		glScalef(0.2,0.2,0);
+		glColor3f(1.0,1.0,1.0);
+		glutStrokeString(GLUT_STROKE_ROMAN, (unsigned char*)"High Score : ");
+		sprintf(toPrint, "%d", hscore);
+		glutStrokeString(GLUT_STROKE_ROMAN, (unsigned char*)(toPrint));
+		glTranslatef(130,100,0);
 		glPopMatrix();
 		glFlush();
 		glutMainLoop();
@@ -223,8 +243,8 @@ void drawBG() {
   glBegin(GL_QUADS);
       glTexCoord2d(0,0);        glVertex2f(-35,0);
       glTexCoord2d(1,0);        glVertex2f(35,0);
-      glTexCoord2d(1,1);        glVertex2f(35,100);
-      glTexCoord2d(0,1);        glVertex2f(-35,100);
+      glTexCoord2d(1,1);        glVertex2f(35,90);
+      glTexCoord2d(0,1);        glVertex2f(-35,90);
   glEnd();
   glDisable(GL_TEXTURE_2D);
 }
@@ -259,7 +279,15 @@ void screen1() {
 
 
 void rotatePaddle() {
-	glClearColor(0.56,0.188,0.188, 1);
+  if(score<=3) {
+      glClearColor(0.012,0.259,0.325,1);
+  }else if(score<=6) {
+      glClearColor(0.56,0.188,0.188,1);
+      radiusb = 5;
+      Speed = 0.16;
+  }else {
+      glClearColor(0.012,0.325,0.236,1);
+  }
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
   // glDisable(GL_DEPTH_TEST);
   // glMatrixMode(GL_PROJECTION);
@@ -287,7 +315,7 @@ void idleFunc() {
 }
 
 void init() {
-	glClearColor(0.56,0.188,0.188, 1);
+	glClearColor(0.012,0.259,0.325, 1);
 	glClear(GL_COLOR_BUFFER_BIT);
 	//paddle();
 }
@@ -298,7 +326,15 @@ void myDisp() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		screen0();
 	}else{
-		glClearColor(0.56,0.188,0.188,1);
+    if(score<=3) {
+		    glClearColor(0.012,0.259,0.325,1);
+    }else if(score<=6) {
+        glClearColor(0.56,0.188,0.188,1);
+        radiusb = 5;
+        Speed = 0.16;
+    }else{
+        glClearColor(0.012,0.325,0.236,1);
+    }
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		// glDisable(GL_DEPTH_TEST);
 	  // glMatrixMode(GL_PROJECTION);
@@ -321,6 +357,15 @@ void myDisp() {
 		glTranslatef(-200,-200,0);
 		glLineWidth(3);
 		glPopMatrix();
+    glPushMatrix();
+		glTranslatef(170,170,0);
+		glScalef(0.1,0.1,0);
+		glColor3f(1.0,1.0,1.0);
+		glutStrokeString(GLUT_STROKE_ROMAN, (unsigned char*)"High Score : ");
+		sprintf(toPrint, "%d", hscore);
+		glutStrokeString(GLUT_STROKE_ROMAN, (unsigned char*)(toPrint));
+		glTranslatef(-170,-170,0);
+		glPopMatrix();
 	}
 	glFlush();
 	glutSwapBuffers();
@@ -330,7 +375,7 @@ void keys(unsigned char key, int x, int y) {
   if(screen==0){
 		if(key=='x'){
 			screen=1;
-			glClearColor(0.56,0.188,0.188,1);
+			glClearColor(0.012,0.259,0.325,1);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 			screen1();
 		}
@@ -345,12 +390,22 @@ void specialkey(int key, int x, int y)
 {
 	if(screen==2){
 		if(key==GLUT_KEY_LEFT) {
-			if(theta<360.0) theta+=360.0;
-			theta-=2.0;
+      if(score>6){
+        if(theta>360.0) theta-=360.0;
+        theta+=2.0;
+      }else{
+			  if(theta<360.0) theta+=360.0;
+			  theta-=2.0;
+      }
 		}
 		if(key==GLUT_KEY_RIGHT) {
-			if(theta>360.0) theta-=360.0;
-			theta+=2.0;
+      if(score>6){
+        if(theta<360.0) theta+=360.0;
+  			theta-=2.0;
+      }else {
+        if(theta>360.0) theta-=360.0;
+  			theta+=2.0;
+      }
 		}
 		rotatePaddle();
 	}
@@ -360,6 +415,14 @@ void specialkey(int key, int x, int y)
 
 
 int main(int argc, char **argv) {
+  fin=fopen("score.txt","r");
+  if(fin==NULL){
+    printf("Error !!");
+    exit(1);
+  }
+  fscanf(fin,"%d",&hscore);
+  fclose(fin);
+  //printf("%d\n",hscore );
 	glutInit(&argc,argv);
 	glutInitWindowSize(500,500);
 	glutCreateWindow("Circle Pong");
