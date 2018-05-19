@@ -107,7 +107,7 @@ void ball(GLdouble x, GLdouble y) {
 }
 
 
-//To Rotate an object 
+//To Rotate an object
 void rotate() {
 	int i,j,k;
 
@@ -168,11 +168,22 @@ void vRecalc(){
 	vy = sin(Angle) * Speed;
 	return;
 }
+
+bool checkSide(int x1, int y1, int x2, int y2,int x3,int y3){
+double dist1,dist2;
+dist1=pow(x1-x2,2)+pow(y1-y2,2);
+dist2=pow(x1-x3,2)+pow(y1-y3,2);
+if(dist1>pow(x3-x2,2)+pow(y3-y2,2)||dist2>pow(x3-x2,2)+pow(y3-y2,2))
+    return false;
+else
+    return true;
+}
+
 void checkCollision(double bx,double by){
 	double dPaddle=dist(bx, by, x1, Y1, x2, y2);
 	double d=pow(bx,2)+pow(by,2);
 	if(d<pow(rc-radiusb,2)){
-		if(dPaddle<=pow(radiusb,2)){
+		if(dPaddle<=pow(radiusb,2)&&checkSide(bx,by,x1,Y1,x2,y2)){
 			vRecalc();
 			vx*=-1.0;
 			vy*=-1.0;
@@ -312,7 +323,7 @@ void rotatePaddle() {
 	}else if(score<=6) {
 		glClearColor(0.56,0.188,0.188,1);
 		radiusb = 5;
-		Speed = 0.16;
+		Speed = 0.11;
 	}else {
 		glClearColor(0.012,0.325,0.236,1);
 	}
